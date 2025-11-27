@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dhaval Kedaria Media Center</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="max-w-xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Dhaval Kedaria Media Center</h1>
+
+    <!-- Progress -->
+    <div id="progressWrap" class="hidden mb-6">
+      <div class="flex justify-between text-sm mb-1">
+        <span>Progress</span>
+        <span id="progressText">Starting…</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-3">
+        <div id="progressBar" class="bg-blue-600 h-3 rounded-full" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- AUDIO -->
+    <div class="bg-white p-5 rounded-xl shadow mb-6">
+      <h2 class="text-xl font-semibold mb-3">Download Audio</h2>
+      <form id="audioForm" method="POST" action="/download_audio">
+        <input type="hidden" name="task_id" />
+        <input type="text" name="url" placeholder="Enter YouTube URL"
+               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 mb-3" required />
+
+        <label class="block text-sm mb-1">Audio format</label>
+        <select name="audio_format" class="w-full p-2 border border-gray-300 rounded-lg mb-4">
+          <option value="mp3" selected>MP3 (320kbps)</option>
+          <option value="m4a">M4A</option>
+          <option value="aac">AAC</option>
+          <option value="wav">WAV</option>
+          <option value="ogg">OGG (Vorbis)</option>
+          <option value="flac">FLAC (lossless)</option>
+        </select>
+
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+          Download Audio
+        </button>
+      </form>
+    </div>
+
+    <!-- VIDEO -->
+    <div class="bg-white p-5 rounded-xl shadow mb-6">
+      <h2 class="text-xl font-semibold mb-3">Download Video</h2>
+      <form id="videoForm" method="POST" action="/download_video">
+        <input type="hidden" name="task_id" />
+        <input type="text" name="video_url" placeholder="Enter YouTube URL"
+               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 mb-3" required />
+
+        <label class="block text-sm mb-1">Resolution</label>
+        <select name="resolution" class="w-full p-2 border border-gray-300 rounded-lg mb-3">
+          <option value="144">144p</option>
+          <option value="360">360p</option>
+          <option value="480">480p</option>
+          <option value="720">720p</option>
+          <option value="1080" selected>1080p</option>
+          <option value="2160">4K</option>
+        </select>
+
+        <label class="block text-sm mb-1">Video format</label>
+        <select name="format" class="w-full p-2 border border-gray-300 rounded-lg mb-4">
+          <option value="mp4" selected>MP4</option>
+          <option value="webm">WEBM</option>
+          <option value="mkv">MKV</option>
+        </select>
+
+        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+          Download Video
+        </button>
+      </form>
+    </div>
+
+    <!-- SUBTITLES -->
+    <div class="bg-white p-5 rounded-xl shadow mb-6">
+      <h2 class="text-xl font-semibold mb-3">Download Subtitles (SRT)</h2>
+      <form id="subsForm" method="POST" action="/download_subtitles">
+        <input type="hidden" name="task_id" />
+        <input type="text" name="subs_url" placeholder="Enter YouTube URL"
+               class="w-full p-3 border border-gray-300 rounded-lg mb-3" required />
+        <label class="block text-sm mb-1">Language code (e.g., en, hi)</label>
+        <input type="text" name="subs_lang" value="en"
+               class="w-full p-2 border border-gray-300 rounded-lg mb-4" />
+        <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
+          Download Subtitles
+        </button>
+      </form>
+    </div>
+
+    <!-- THUMBNAIL -->
+    <div class="bg-white p-5 rounded-xl shadow">
+      <h2 class="text-xl font-semibold mb-3">Download Thumbnail (Best Quality)</h2>
+      <form id="thumbForm" method="POST" action="/download_thumbnail">
+        <input type="hidden" name="task_id" />
+        <input type="text" name="thumb_url" placeholder="Enter YouTube URL"
+               class="w-full p-3 border border-gray-300 rounded-lg mb-4" required />
+        <button type="submit" class="w-full bg-amber-600 text-white py-2 rounded-lg hover:bg-amber-700">
+          Download Thumbnail
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const uuid = () => crypto.randomUUID ? crypto.randomUUID().replace(/-/g,'') :
+      (Date.now().toString(16) + Math.random().toString(16).slice(2));
+
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar  = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+
+    function installAjax(form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const tid = uuid();
+        form.querySelector('input[name="task_id"]').value = tid;
+
+        progressWrap.classList.remove('hidden');
+        progressBar.style.width = '0%';
+        progressText.textContent = 'Starting…';
+
+        // Poll progress
+        let poll = setInterval(async () => {
+          try {
+            const r = await fetch(`/progress/${tid}`);
+            if (r.ok) {
+              const j = await r.json();
+              progressBar.style.width = (j.pct || 0) + '%';
+              progressText.textContent = j.text || '';
+              if (j.done) {
+                clearInterval(poll);
+              }
+            }
+          } catch {}
+        }, 700);
+
+        const fd = new FormData(form);
+        const resp = await fetch(form.action, { method: 'POST', body: fd });
+
+        if (!resp.ok) {
+          clearInterval(poll);
+          progressText.textContent = 'Error. Check server logs.';
+          return;
+        }
+
+        // Detect JSON vs file
+        const ct = resp.headers.get('Content-Type') || '';
+        if (ct.includes('application/json')) {
+          // server in token mode
+          const data = await resp.json();
+          if (data.download_url) {
+            window.open(data.download_url, '_blank'); // triggers token download
+            progressText.textContent = 'Ready. Downloading via token…';
+          } else {
+            progressText.textContent = 'Saved on server only.';
+            console.log('Saved:', data);
+          }
+        } else {
+          // server sent file directly
+          const blob = await resp.blob();
+          let filename = 'download';
+          const cd = resp.headers.get('Content-Disposition');
+          if (cd) {
+            const m = cd.match(/filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i);
+            if (m) filename = decodeURIComponent(m[1]);
+          }
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = filename;
+          document.body.appendChild(a); a.click(); a.remove();
+          window.URL.revokeObjectURL(url);
+          progressText.textContent = 'Done.';
+        }
+      });
+    }
+
+    ['audioForm','videoForm','subsForm','thumbForm'].forEach(id=>{
+      installAjax(document.getElementById(id));
+    });
+  </script>
+</body>
+</html>
