@@ -2,177 +2,676 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dhaval Kedaria Media Center</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface-2: #eef3f8;
+      --text: #172033;
+      --muted: #647086;
+      --line: #dbe3ed;
+      --accent: #2563eb;
+      --accent-2: #0f9f7a;
+      --accent-3: #be5b00;
+      --danger: #c2410c;
+      --shadow: 0 18px 50px rgba(34, 47, 78, 0.12);
+      --field: #ffffff;
+      --field-focus: rgba(37, 99, 235, 0.18);
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-2: #202936;
+      --text: #edf2f7;
+      --muted: #9da9bb;
+      --line: #303947;
+      --accent: #6aa6ff;
+      --accent-2: #35c49b;
+      --accent-3: #f2a84a;
+      --danger: #ff895f;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+      --field: #101720;
+      --field-focus: rgba(106, 166, 255, 0.24);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 14%, transparent), transparent 32rem),
+        linear-gradient(135deg, var(--bg), color-mix(in srgb, var(--surface-2) 65%, var(--bg)));
+      color: var(--text);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      font-weight: 800;
+      letter-spacing: 0;
+      box-shadow: var(--shadow);
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.4vw, 2rem);
+      letter-spacing: 0;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .theme-toggle {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 4px;
+      min-width: 214px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--surface) 78%, transparent);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    }
+
+    .theme-toggle button {
+      min-height: 36px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease;
+    }
+
+    .theme-toggle button.active {
+      background: var(--text);
+      color: var(--surface);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .panel {
+      background: color-mix(in srgb, var(--surface) 94%, transparent);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .tool {
+      padding: 20px;
+      min-width: 0;
+    }
+
+    .tool-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .tool-title {
+      margin: 0;
+      font-size: 1.05rem;
+      line-height: 1.2;
+    }
+
+    .tool-kicker {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .badge {
+      align-self: flex-start;
+      border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+      border-radius: 999px;
+      color: var(--accent);
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      white-space: nowrap;
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 650;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--field);
+      color: var(--text);
+      padding: 0 12px;
+      outline: none;
+      transition: border 150ms ease, box-shadow 150ms ease, background 150ms ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--field-focus);
+    }
+
+    .action {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      min-height: 46px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform 140ms ease, filter 140ms ease, opacity 140ms ease;
+    }
+
+    .action:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    .action:disabled {
+      cursor: wait;
+      opacity: 0.66;
+      transform: none;
+    }
+
+    .video .action {
+      background: var(--accent-2);
+    }
+
+    .subtitles .action {
+      background: #7c3aed;
+    }
+
+    [data-theme="dark"] .subtitles .action {
+      background: #9b7cff;
+      color: #121622;
+    }
+
+    .thumbnail .action {
+      background: var(--accent-3);
+    }
+
+    .status {
+      position: sticky;
+      top: 24px;
+      padding: 20px;
+    }
+
+    .status h2 {
+      margin: 0 0 14px;
+      font-size: 1rem;
+    }
+
+    .progress-meter {
+      display: grid;
+      place-items: center;
+      width: 168px;
+      height: 168px;
+      margin: 8px auto 18px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent) var(--progress, 0%), var(--surface-2) 0);
+      position: relative;
+    }
+
+    .progress-meter::after {
+      content: "";
+      position: absolute;
+      inset: 13px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--line);
+    }
+
+    .progress-value {
+      position: relative;
+      z-index: 1;
+      font-size: 2rem;
+      font-weight: 800;
+    }
+
+    .progress-text {
+      min-height: 44px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .progress-bar-track {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 180ms ease;
+    }
+
+    .status-list {
+      display: grid;
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .status-item strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 960px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .status {
+        position: static;
+        order: -1;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100% - 20px, 1180px);
+        padding-top: 16px;
+      }
+
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .theme-toggle {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .tool-grid,
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+
+      .tool {
+        padding: 16px;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-  <div class="max-w-xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-center mb-6">Dhaval Kedaria Media Center</h1>
-
-    <!-- Progress -->
-    <div id="progressWrap" class="hidden mb-6">
-      <div class="flex justify-between text-sm mb-1">
-        <span>Progress</span>
-        <span id="progressText">Starting…</span>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">DK</div>
+        <div>
+          <h1>Dhaval Kedaria Media Center</h1>
+          <p class="subtitle">Audio, video, subtitles, and thumbnails in one clean workspace.</p>
+        </div>
       </div>
-      <div class="w-full bg-gray-200 rounded-full h-3">
-        <div id="progressBar" class="bg-blue-600 h-3 rounded-full" style="width:0%"></div>
+
+      <div class="theme-toggle" role="group" aria-label="Theme">
+        <button type="button" data-theme-choice="light">Light</button>
+        <button type="button" data-theme-choice="dark">Dark</button>
+        <button type="button" data-theme-choice="auto">Auto</button>
       </div>
-    </div>
+    </header>
 
-    <!-- AUDIO -->
-    <div class="bg-white p-5 rounded-xl shadow mb-6">
-      <h2 class="text-xl font-semibold mb-3">Download Audio</h2>
-      <form id="audioForm" method="POST" action="/download_audio">
-        <input type="hidden" name="task_id" />
-        <input type="text" name="url" placeholder="Enter YouTube URL"
-               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 mb-3" required />
+    <section class="workspace">
+      <div class="tool-grid">
+        <article class="panel tool audio">
+          <div class="tool-header">
+            <div>
+              <h2 class="tool-title">Download Audio</h2>
+              <p class="tool-kicker">Extract clean audio from a YouTube URL.</p>
+            </div>
+            <span class="badge">Audio</span>
+          </div>
 
-        <label class="block text-sm mb-1">Audio format</label>
-        <select name="audio_format" class="w-full p-2 border border-gray-300 rounded-lg mb-4">
-          <option value="mp3" selected>MP3 (320kbps)</option>
-          <option value="m4a">M4A</option>
-          <option value="aac">AAC</option>
-          <option value="wav">WAV</option>
-          <option value="ogg">OGG (Vorbis)</option>
-          <option value="flac">FLAC (lossless)</option>
-        </select>
+          <form id="audioForm" method="POST" action="/download_audio">
+            <input type="hidden" name="task_id" />
+            <div class="field">
+              <label for="audioUrl">YouTube URL</label>
+              <input id="audioUrl" type="url" name="url" placeholder="https://www.youtube.com/watch?v=..." required />
+            </div>
 
-        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-          Download Audio
-        </button>
-      </form>
-    </div>
+            <div class="field">
+              <label for="audioFormat">Audio format</label>
+              <select id="audioFormat" name="audio_format">
+                <option value="mp3" selected>MP3 (320kbps)</option>
+                <option value="m4a">M4A</option>
+                <option value="aac">AAC</option>
+                <option value="wav">WAV</option>
+                <option value="ogg">OGG (Vorbis)</option>
+                <option value="flac">FLAC (lossless)</option>
+              </select>
+            </div>
 
-    <!-- VIDEO -->
-    <div class="bg-white p-5 rounded-xl shadow mb-6">
-      <h2 class="text-xl font-semibold mb-3">Download Video</h2>
-      <form id="videoForm" method="POST" action="/download_video">
-        <input type="hidden" name="task_id" />
-        <input type="text" name="video_url" placeholder="Enter YouTube URL"
-               class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 mb-3" required />
+            <button type="submit" class="action">Download Audio</button>
+          </form>
+        </article>
 
-        <label class="block text-sm mb-1">Resolution</label>
-        <select name="resolution" class="w-full p-2 border border-gray-300 rounded-lg mb-3">
-          <option value="144">144p</option>
-          <option value="360">360p</option>
-          <option value="480">480p</option>
-          <option value="720">720p</option>
-          <option value="1080" selected>1080p</option>
-          <option value="2160">4K</option>
-        </select>
+        <article class="panel tool video">
+          <div class="tool-header">
+            <div>
+              <h2 class="tool-title">Download Video</h2>
+              <p class="tool-kicker">Choose quality and container before download.</p>
+            </div>
+            <span class="badge">Video</span>
+          </div>
 
-        <label class="block text-sm mb-1">Video format</label>
-        <select name="format" class="w-full p-2 border border-gray-300 rounded-lg mb-4">
-          <option value="mp4" selected>MP4</option>
-          <option value="webm">WEBM</option>
-          <option value="mkv">MKV</option>
-        </select>
+          <form id="videoForm" method="POST" action="/download_video">
+            <input type="hidden" name="task_id" />
+            <div class="field">
+              <label for="videoUrl">YouTube URL</label>
+              <input id="videoUrl" type="url" name="video_url" placeholder="https://www.youtube.com/watch?v=..." required />
+            </div>
 
-        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
-          Download Video
-        </button>
-      </form>
-    </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="resolution">Resolution</label>
+                <select id="resolution" name="resolution">
+                  <option value="144">144p</option>
+                  <option value="360">360p</option>
+                  <option value="480">480p</option>
+                  <option value="720">720p</option>
+                  <option value="1080" selected>1080p</option>
+                  <option value="2160">4K</option>
+                </select>
+              </div>
 
-    <!-- SUBTITLES -->
-    <div class="bg-white p-5 rounded-xl shadow mb-6">
-      <h2 class="text-xl font-semibold mb-3">Download Subtitles (SRT)</h2>
-      <form id="subsForm" method="POST" action="/download_subtitles">
-        <input type="hidden" name="task_id" />
-        <input type="text" name="subs_url" placeholder="Enter YouTube URL"
-               class="w-full p-3 border border-gray-300 rounded-lg mb-3" required />
-        <label class="block text-sm mb-1">Language code (e.g., en, hi)</label>
-        <input type="text" name="subs_lang" value="en"
-               class="w-full p-2 border border-gray-300 rounded-lg mb-4" />
-        <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
-          Download Subtitles
-        </button>
-      </form>
-    </div>
+              <div class="field">
+                <label for="videoFormat">Video format</label>
+                <select id="videoFormat" name="format">
+                  <option value="mp4" selected>MP4</option>
+                  <option value="webm">WEBM</option>
+                  <option value="mkv">MKV</option>
+                </select>
+              </div>
+            </div>
 
-    <!-- THUMBNAIL -->
-    <div class="bg-white p-5 rounded-xl shadow">
-      <h2 class="text-xl font-semibold mb-3">Download Thumbnail (Best Quality)</h2>
-      <form id="thumbForm" method="POST" action="/download_thumbnail">
-        <input type="hidden" name="task_id" />
-        <input type="text" name="thumb_url" placeholder="Enter YouTube URL"
-               class="w-full p-3 border border-gray-300 rounded-lg mb-4" required />
-        <button type="submit" class="w-full bg-amber-600 text-white py-2 rounded-lg hover:bg-amber-700">
-          Download Thumbnail
-        </button>
-      </form>
-    </div>
-  </div>
+            <button type="submit" class="action">Download Video</button>
+          </form>
+        </article>
+
+        <article class="panel tool subtitles">
+          <div class="tool-header">
+            <div>
+              <h2 class="tool-title">Download Subtitles</h2>
+              <p class="tool-kicker">Export available captions as an SRT file.</p>
+            </div>
+            <span class="badge">SRT</span>
+          </div>
+
+          <form id="subsForm" method="POST" action="/download_subtitles">
+            <input type="hidden" name="task_id" />
+            <div class="field">
+              <label for="subsUrl">YouTube URL</label>
+              <input id="subsUrl" type="url" name="subs_url" placeholder="https://www.youtube.com/watch?v=..." required />
+            </div>
+
+            <div class="field">
+              <label for="subsLang">Language code</label>
+              <input id="subsLang" type="text" name="subs_lang" value="en" />
+            </div>
+
+            <button type="submit" class="action">Download Subtitles</button>
+          </form>
+        </article>
+
+        <article class="panel tool thumbnail">
+          <div class="tool-header">
+            <div>
+              <h2 class="tool-title">Download Thumbnail</h2>
+              <p class="tool-kicker">Save the best available preview image.</p>
+            </div>
+            <span class="badge">Image</span>
+          </div>
+
+          <form id="thumbForm" method="POST" action="/download_thumbnail">
+            <input type="hidden" name="task_id" />
+            <div class="field">
+              <label for="thumbUrl">YouTube URL</label>
+              <input id="thumbUrl" type="url" name="thumb_url" placeholder="https://www.youtube.com/watch?v=..." required />
+            </div>
+
+            <button type="submit" class="action">Download Thumbnail</button>
+          </form>
+        </article>
+      </div>
+
+      <aside id="progressWrap" class="panel status">
+        <h2>Current Task</h2>
+        <div class="progress-meter" id="progressMeter" style="--progress: 0%">
+          <span class="progress-value" id="progressValue">0%</span>
+        </div>
+        <div class="progress-text" id="progressText">Ready</div>
+        <div class="progress-bar-track">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="status-list">
+          <div class="status-item">
+            <span>Mode</span>
+            <strong id="activeMode">Idle</strong>
+          </div>
+          <div class="status-item">
+            <span>Status</span>
+            <strong id="activeStatus">Waiting</strong>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
 
   <script>
-    // simple uuid
-    const uuid = () => crypto.randomUUID ? crypto.randomUUID().replace(/-/g,'') :
+    const uuid = () => crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') :
       (Date.now().toString(16) + Math.random().toString(16).slice(2));
 
+    const root = document.documentElement;
+    const themeButtons = document.querySelectorAll('[data-theme-choice]');
     const progressWrap = document.getElementById('progressWrap');
-    const progressBar  = document.getElementById('progressBar');
+    const progressMeter = document.getElementById('progressMeter');
+    const progressBar = document.getElementById('progressBar');
+    const progressValue = document.getElementById('progressValue');
     const progressText = document.getElementById('progressText');
+    const activeMode = document.getElementById('activeMode');
+    const activeStatus = document.getElementById('activeStatus');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
 
-    function installAjax(form) {
+    function applyTheme(choice) {
+      const selected = choice || localStorage.getItem('mediaTheme') || 'auto';
+      const theme = selected === 'auto' ? (prefersDark.matches ? 'dark' : 'light') : selected;
+      root.dataset.theme = theme;
+      localStorage.setItem('mediaTheme', selected);
+      themeButtons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.themeChoice === selected);
+      });
+    }
+
+    themeButtons.forEach((button) => {
+      button.addEventListener('click', () => applyTheme(button.dataset.themeChoice));
+    });
+
+    prefersDark.addEventListener('change', () => {
+      if ((localStorage.getItem('mediaTheme') || 'auto') === 'auto') applyTheme('auto');
+    });
+
+    applyTheme();
+
+    function setProgress(pct, text, status) {
+      const value = Math.max(0, Math.min(100, Number(pct) || 0));
+      progressBar.style.width = value + '%';
+      progressMeter.style.setProperty('--progress', value + '%');
+      progressValue.textContent = value + '%';
+      progressText.textContent = text || 'Working';
+      activeStatus.textContent = status || 'Running';
+    }
+
+    function setBusy(form, busy) {
+      form.querySelectorAll('button, input, select').forEach((control) => {
+        if (control.type !== 'hidden') control.disabled = busy;
+      });
+    }
+
+    function installAjax(form, modeLabel) {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // create task id and inject
         const tid = uuid();
         form.querySelector('input[name="task_id"]').value = tid;
+        const fd = new FormData(form);
+        activeMode.textContent = modeLabel;
+        setProgress(0, 'Starting...', 'Running');
+        setBusy(form, true);
 
-        progressWrap.classList.remove('hidden');
-        progressBar.style.width = '0%';
-        progressText.textContent = 'Starting…';
-
-        // Start polling progress
         let poll = setInterval(async () => {
           try {
             const r = await fetch(`/progress/${tid}`);
             if (r.ok) {
               const j = await r.json();
-              progressBar.style.width = (j.pct || 0) + '%';
-              progressText.textContent = j.text || '';
-              if (j.done) {
-                clearInterval(poll);
-              }
+              setProgress(j.pct || 0, j.text || 'Working', j.done ? 'Complete' : 'Running');
+              if (j.done) clearInterval(poll);
             }
-          } catch (err) { /* ignore */ }
+          } catch (err) {
+            activeStatus.textContent = 'Checking';
+          }
         }, 700);
 
-        // Submit form via fetch to capture file and trigger download
-        const fd = new FormData(form);
-        const resp = await fetch(form.action, { method: 'POST', body: fd });
-        if (!resp.ok) {
+        try {
+          const resp = await fetch(form.action, { method: 'POST', body: fd });
+          if (!resp.ok) {
+            clearInterval(poll);
+            const message = await resp.text();
+            setProgress(0, message || 'Error. Check server logs.', 'Failed');
+            return;
+          }
+
+          const blob = await resp.blob();
+          let filename = 'download';
+          const cd = resp.headers.get('Content-Disposition');
+          if (cd) {
+            const m = cd.match(/filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i);
+            if (m) filename = decodeURIComponent(m[1]);
+          }
+
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+          setProgress(100, 'Done', 'Complete');
+        } catch (err) {
           clearInterval(poll);
-          progressText.textContent = 'Error. Check server logs.';
-          return;
+          setProgress(0, 'Error. Check server logs.', 'Failed');
+        } finally {
+          setBusy(form, false);
         }
-        const blob = await resp.blob();
-
-        // Try to parse filename from headers
-        let filename = 'download';
-        const cd = resp.headers.get('Content-Disposition');
-        if (cd) {
-          const m = cd.match(/filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i);
-          if (m) filename = decodeURIComponent(m[1]);
-        }
-
-        // Trigger download
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = filename;
-        document.body.appendChild(a); a.click(); a.remove();
-        window.URL.revokeObjectURL(url);
       });
     }
 
-    ['audioForm','videoForm','subsForm','thumbForm'].forEach(id=>{
-      const f = document.getElementById(id);
-      installAjax(f);
-    });
+    installAjax(document.getElementById('audioForm'), 'Audio');
+    installAjax(document.getElementById('videoForm'), 'Video');
+    installAjax(document.getElementById('subsForm'), 'Subtitles');
+    installAjax(document.getElementById('thumbForm'), 'Thumbnail');
   </script>
 </body>
 </html>

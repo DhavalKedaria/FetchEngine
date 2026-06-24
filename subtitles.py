@@ -5,6 +5,13 @@ import subprocess
 import requests
 import yt_dlp
 
+YOUTUBE_CLIENT_SETS = (
+    ('android_vr', 'web_safari'),
+    ('ios', 'android'),
+    ('mweb', 'tv'),
+    ('web', 'web_embedded'),
+)
+
 
 def _pick_track(tracks_dict, lang):
     """
@@ -85,35 +92,52 @@ def download_subtitles_file(url, out_dir, lang='en', progress_cb=None):
     """
     os.makedirs(out_dir, exist_ok=True)
 
-    # minimal opts – just fetch metadata
-    ydl_opts = {
+    # Minimal opts: just fetch metadata and captions.
+    base_opts = {
         'quiet': True,
         'noplaylist': True,
         'skip_download': True,
+        'ignore_no_formats_error': True,
+        'cachedir': False,
         # make networking more resilient
         'retries': 5,
         'fragment_retries': 5,
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
+    selected = None
+    last_error = None
+    for clients in YOUTUBE_CLIENT_SETS:
+        ydl_opts = {
+            **base_opts,
+            'extractor_args': {'youtube': {'player_client': list(clients)}},
+        }
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
 
+            subs = info.get('subtitles') or {}
+            auto = info.get('automatic_captions') or {}
+            chosen_lang, track = _pick_track(subs, lang)
+            if not track:
+                chosen_lang, track = _pick_track(auto, lang)
+
+            if track and track.get('url'):
+                selected = (info, chosen_lang, track)
+                break
+
+            print(f"No subtitle tracks found with YouTube clients {clients}; trying another client set")
+        except yt_dlp.utils.DownloadError as e:
+            last_error = e
+            print(f"Subtitle metadata retry needed for YouTube clients {clients}: {e}")
+
+    if not selected:
+        if last_error:
+            print(f"Subtitle lookup failed after retries: {last_error}")
+        return None
+
+    info, chosen_lang, track = selected
     title = info.get('title') or 'subtitle'
     safe_title = "".join(ch for ch in title if ch.isalnum() or ch in " ._-").rstrip()
-
-    # Prefer real subtitles
-    subs = info.get('subtitles') or {}
-    auto = info.get('automatic_captions') or {}
-
-    # Step 1: try manual subs
-    chosen_lang, track = _pick_track(subs, lang)
-
-    # Step 2: fallback to auto-captions
-    if not track:
-        chosen_lang, track = _pick_track(auto, lang)
-
-    if not track or not track.get('url'):
-        return None  # nothing available
 
     ext = track.get('ext', 'vtt').lower()
     src_url = track['url']

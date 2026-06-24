@@ -2,19 +2,44 @@ import yt_dlp
 import os
 import requests
 
+YOUTUBE_CLIENT_SETS = (
+    ('android_vr', 'web_safari'),
+    ('ios', 'android'),
+    ('mweb', 'tv'),
+)
+
 def download_thumbnail_file(url, out_dir, progress_cb=None):
     os.makedirs(out_dir, exist_ok=True)
 
-    ydl_opts = {
+    base_opts = {
         'skip_download': True,
         'quiet': True,
         'noplaylist': True,
+        'ignore_no_formats_error': True,
         'progress_hooks': [progress_cb] if progress_cb else [],
-        'outtmpl': f'{out_dir}/%(title)s.%(ext)s',
+        'outtmpl': os.path.join(out_dir, '%(title)s.%(ext)s'),
+        'cachedir': False,
     }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
+    info = None
+    last_error = None
+    for clients in YOUTUBE_CLIENT_SETS:
+        ydl_opts = {
+            **base_opts,
+            'extractor_args': {'youtube': {'player_client': list(clients)}},
+        }
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+            break
+        except yt_dlp.utils.DownloadError as e:
+            last_error = e
+            print(f"Thumbnail metadata retry needed for YouTube clients {clients}: {e}")
+
+    if not info:
+        if last_error:
+            raise last_error
+        return None
 
     title = info.get('title') or 'thumbnail'
     thumbs = info.get('thumbnails') or []
